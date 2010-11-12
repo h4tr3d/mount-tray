@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/ui">
+        <file>images/diskette.png</file>
+        <file>images/eject.png</file>
+    </qresource>
+</RCC>

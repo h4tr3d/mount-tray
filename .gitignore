@@ -1,0 +1,12 @@
+build/*
+bin/*
+Makefile
+Makefile.*
+object_script.*.*
+*.pro.user
+*.pro.user.*
+.qdevelop
+*.qm
+src/valgrind.txt
+scripts/valgrind.txt
+*-win32

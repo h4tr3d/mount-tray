@@ -12,6 +12,8 @@ TEMPLATE   = app
 CONFIG    += link_pkgconfig qdbus
 PKGCONFIG += libudev
 
+#QMAKE_CXXFLAGS += -Wall -Wextra -pedantic
+
 SOURCES += \
     src/mounttrayapp.cpp \
     src/main.cpp \

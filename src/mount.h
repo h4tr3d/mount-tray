@@ -1,6 +1,6 @@
 /** =============================================================================================
 
-    This file is a part of "%ProjectName%" project
+    This file is a part of "MountTray" project
     http://hatred.homelinux.net
 
     @date   2010-11-11
@@ -34,8 +34,8 @@ typedef enum {
 bool diskMount(MountingType  type,
                QString      &device,
                QString      &mount_point,
-               QString       fs = QString(),
-               QString       options = QString());
+               QString      fs      = QString(),
+               QString      options = QString());
 
 bool diskUnMount(MountingType  type,
                  QString      &device);

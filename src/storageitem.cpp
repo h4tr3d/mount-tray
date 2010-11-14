@@ -1,22 +1,21 @@
-/**************************************************************************
-**   Copyright (C) 2010 by hatred
-**   hatred@inbox.ru
-**   http://hatred.homelinux.net
-**
-**   This file is a part of "%ProjectName%" application
-**
-**   This program is free software; you can redistribute it and/or modify
-**   it under the terms of the version 2 of GNU General Public License as
-**   published by the Free Software Foundation.
-**
-**   For more information see LICENSE and LICENSE.ru files
-**
-**   @file   %FileName%
-**   @date   %DATE%
-**   @author hatred
-**   @brief
-**
-**************************************************************************/
+/** =============================================================================================
+
+    This file is a part of "MountTray" project
+    http://hatred.homelinux.net
+
+    @date   2010-06-06
+    @brief  Class for iterate with one device: mount, unmount them, take information about
+            mount status, mount point
+
+    Copyright (C) 2010 by hatred <hatred@inbox.ru>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the version 2 of GNU General Public License as
+    published by the Free Software Foundation.
+
+    For more information see LICENSE and LICENSE.ru files
+
+   ============================================================================================== */
 
 #include <QFile>
 #include <QTextStream>
@@ -41,48 +40,10 @@ StorageItem::StorageItem(DiskInfo info, QObject *parent) :
         _is_mounted    = true;
         _mount_point = mount[1];
     }
-
-//    // Проверить, есть ли метра, если есть, назначить точку по ней
-//    if (tmp_point.isEmpty() && !info.file_system_label.isEmpty())
-//    {
-//        tmp_point = QString("/media/") + info.file_system_label;
-//    }
-
-//    // Если ничего не подошло, использовать стандартную точку
-//    if (tmp_point.isEmpty())
-//    {
-//        tmp_point = QString("/media/disk");
-//    }
-
-//    // Проверить, подмонтировано ли в эту точку, если да, сделать нумерные
-//    if (!tmp_point.isEmpty() && ::isMounted(tmp_point, MC_DIR).count() > 0)
-//    {
-//        for (int i = 1; ; i++)
-//        {
-//            QString new_point = tmp_point + QString("-%1").arg(i);
-//            if (::isMounted(new_point, MC_DIR).count() == 0)
-//            {
-//                tmp_point = new_point;
-//                break;
-//            }
-//        }
-//    }
-
-//    _mount_point = tmp_point;
 }
 
 StorageItem::~StorageItem()
 {
-    // TODO: must be created!!!
-    //if (_is_mounted)
-    //{
-    //    unmount();
-    //}
-
-    //if (_sudo)
-    //{
-    //    while (_sudo->isRunning()){sleep(1);}
-    //}
 }
 
 QString StorageItem::getMountPoint()
@@ -125,39 +86,6 @@ void StorageItem::unmount()
         _mount_point = QString();
     }
 }
-
-//void StorageItem::runCommand(RunCommand command)
-//{
-//    if (_sudo->isRunning())
-//    {
-//        _sudo->stop();
-//    }
-
-//    QString     cmd;
-//    QStringList args;
-
-//    switch (command)
-//    {
-//        case RC_MOUNT:
-//            cmd  = _mount_cmd;
-
-//            args << _udev_info.device_name
-//                 << _mount_point;
-
-//            if (!_mount_options.isEmpty())
-//            {
-//                args << "-o" << _mount_options;
-//            }
-
-//            break;
-//        case RC_UNMOUNT:
-//            cmd  = _unmount_cmd;
-//            args << _mount_point;
-//            break;
-//    }
-
-//    _sudo->start(cmd, args);
-//}
 
 void StorageItem::setMountStatus(bool is_mounted, QString mount_point)
 {

@@ -16,9 +16,9 @@
 
     ============================================================================================= */
 
-#include <QProcess>
-
 #include <iostream>
+
+#include <QProcess>
 
 #include "mount.h"
 
@@ -111,8 +111,11 @@ static bool unmountUdisks(QString &device)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-bool diskMount(MountingType type, QString &device, QString &mount_point, QString fs, QString options)
+bool diskMount(MountingType  type,
+               QString      &device,
+               QString      &mount_point,
+               QString      fs,
+               QString      options)
 {
     bool result = false;
     switch (type)

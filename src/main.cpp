@@ -19,8 +19,6 @@
 #include <QtGui/QApplication>
 #include <QtDBus/QtDBus>
 
-#include <iostream>
-
 #include "mounttrayapp.h"
 
 int main(int argc, char *argv[])

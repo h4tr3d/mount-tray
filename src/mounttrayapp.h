@@ -1,12 +1,12 @@
 /** =============================================================================================
 
-    This file is a part of "%ProjectName%" project
+    This file is a part of "MountTray" project
     http://hatred.homelinux.net
 
-    @date   2010-%MONTH%-%DAY%
-    @brief
+    @date   2010-11-11
+    @brief  Main application class: integrate all components
 
-    Copyright (C) 2010 by hatred <>
+    Copyright (C) 2010 by hatred <hatred@inbox.ru>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the version 2 of GNU General Public License as

@@ -1,22 +1,21 @@
-/**************************************************************************
-**   Copyright (C) 2010 by hatred
-**   hatred@inbox.ru
-**   http://hatred.homelinux.net
-**
-**   This file is a part of "%ProjectName%" application
-**
-**   This program is free software; you can redistribute it and/or modify
-**   it under the terms of the version 2 of GNU General Public License as
-**   published by the Free Software Foundation.
-**
-**   For more information see LICENSE and LICENSE.ru files
-**
-**   @file   %FileName%
-**   @date   %DATE%
-**   @author hatred
-**   @brief
-**
-**************************************************************************/
+/** =============================================================================================
+
+    This file is a part of "MountTray" project
+    http://hatred.homelinux.net
+
+    @date   2010-06-06
+    @brief  Class for iterate with one device: mount, unmount them, take information about
+            mount status, mount point
+
+    Copyright (C) 2010 by hatred <hatred@inbox.ru>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the version 2 of GNU General Public License as
+    published by the Free Software Foundation.
+
+    For more information see LICENSE and LICENSE.ru files
+
+   ============================================================================================== */
 
 #ifndef STORAGEITEM_H
 #define STORAGEITEM_H
@@ -24,7 +23,6 @@
 #include <QObject>
 
 #include "diskmonitor.h"
-//#include "qsudo.h"
 
 typedef enum {
     RC_MOUNT,
@@ -51,23 +49,11 @@ signals:
     void deviceUnmounted(QString device_name);
     void deviceError(QString device_name, QString error_text);
 
-public slots:
-
-private slots:
-    //
-
 private:
-    //void runCommand(RunCommand command);
-
-private:
-    //QSudo    *_sudo;
     DiskInfo  _udev_info;
     QString   _mount_point;
     QString   _mount_options;
     bool      _is_mounted;
-
-    //QString   _mount_cmd;
-    //QString   _unmount_cmd;
 };
 
 #endif // STORAGEITEM_H

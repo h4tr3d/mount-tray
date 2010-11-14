@@ -1,22 +1,20 @@
-/**************************************************************************
-**   Copyright (C) 2010 by hatred
-**   hatred@inbox.ru
-**   http://hatred.homelinux.net
-**
-**   This file is a part of "%ProjectName%" application
-**
-**   This program is free software; you can redistribute it and/or modify
-**   it under the terms of the version 2 of GNU General Public License as
-**   published by the Free Software Foundation.
-**
-**   For more information see LICENSE and LICENSE.ru files
-**
-**   @file   %FileName%
-**   @date   %DATE%
-**   @author hatred
-**   @brief
-**
-**************************************************************************/
+/** =============================================================================================
+
+    This file is a part of "MountTray" project
+    http://hatred.homelinux.net
+
+    @date   2010-06-06
+    @brief  DiskMonitor - watch udev and detect adding and removing block devices
+
+    Copyright (C) 2010 by hatred <hatred@inbox.ru>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the version 2 of GNU General Public License as
+    published by the Free Software Foundation.
+
+    For more information see LICENSE and LICENSE.ru files
+
+   ============================================================================================== */
 
 #ifndef DISKMONITOR_H
 #define DISKMONITOR_H
@@ -25,8 +23,6 @@
 
 #include <QThread>
 #include <QMap>
-
-//#include "inotify.hpp"
 
 typedef QMap<QString, QString> QUdevInfo;
 

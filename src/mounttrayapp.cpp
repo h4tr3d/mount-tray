@@ -222,7 +222,7 @@ void MountTrayApp::onDbusDeviceChangesMessage(QDBusObjectPath device)
         }
         else
         {
-            showMessage(tr("Device '%1' is unmounted").arg(dev_name));
+            showMessage(tr("Device '%1' is unmounted\nNow you can eject USB Flash or CD/DVD Disk").arg(dev_name));
         }
     }
 }

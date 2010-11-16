@@ -37,10 +37,6 @@ public:
     explicit MountTrayApp(int &argc, char **argv);
     ~MountTrayApp();
 
-signals:
-
-public slots:
-
 private slots:
     void onDiskAdded(DiskInfo info);
     void onDiskRemoved(DiskInfo info);
@@ -49,6 +45,8 @@ private slots:
 
     void onMediaMount(QString device);
     void onMediaEject(QString device);
+
+    void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
 
 private:
     void initialScanDevices();
@@ -61,8 +59,9 @@ private:
 
 private:
     QSystemTrayIcon                 _tray_icon;
-    QMenu                          *_menu;
-    QHash<QString, QWidgetAction*>  _menu_items;
+    QMenu                          *_main_menu;
+    QMenu                          *_disk_menu;
+    QHash<QString, QWidgetAction*>  _disk_menu_items;
 
     DiskMonitor    _dm;
     StorageManager _sm;

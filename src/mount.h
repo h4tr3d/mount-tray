@@ -32,10 +32,10 @@ typedef enum {
 } MountingType;
 
 bool diskMount(MountingType  type,
-               QString      &device,
+               const QString      &device,
                QString      &mount_point,
-               QString      fs      = QString(),
-               QString      options = QString());
+               const QString      &fs      = QString(),
+               const QString      &options = QString());
 
 bool diskUnMount(MountingType  type,
                  QString      &device);

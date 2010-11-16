@@ -31,13 +31,22 @@ MountTrayApp::MountTrayApp(int & argc, char ** argv) :
         std::cout << "Can't connect to dbus daemon. Some functions will be omited\n";
     }
 
+    // Display disk menu
+    _disk_menu            = new QMenu();
+    QAction *empty_action = _disk_menu->addAction(tr("Empty"));
+    empty_action->setEnabled(false);
+
+    // Exit, config and etc menu
+    _main_menu = new QMenu();
+    _main_menu->addSeparator();
+    _main_menu->addAction("Exit", this, SLOT(quit()));
+
     _tray_icon.setIcon(QIcon(":/ui/images/diskette.png"));
     _tray_icon.show();
+    _tray_icon.setContextMenu(_main_menu);
 
-    _menu = new QMenu();
-    _menu->addSeparator();
-    _menu->addAction("Exit", this, SLOT(quit()));
-    _tray_icon.setContextMenu(_menu);
+    connect(&_tray_icon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+            this,        SLOT(onTrayActivated(QSystemTrayIcon::ActivationReason)));
 
     QDBusConnection conn = QDBusConnection::systemBus();
     // TODO: Check for connection, timer for reconect
@@ -88,9 +97,19 @@ void MountTrayApp::addMenuItem(QString device, QString name)
     QWidgetAction *action = new QWidgetAction(this);
     action->setDefaultWidget(item);
 
-    // Insert on Top
-    _menu->insertAction(_menu->actions().at(0), action);
-    _menu_items.insert(device, action);
+    if (_disk_menu_items.count() == 0)
+    {
+        // Clear 'Empty' item
+        _disk_menu->clear();
+        _disk_menu->addAction(action);
+    }
+    else
+    {
+        // Insert on Top
+        _disk_menu->insertAction(_disk_menu->actions().at(0), action);
+    }
+
+    _disk_menu_items.insert(device, action);
 
     // Connect signals
     connect(item, SIGNAL(mountMedia(QString)),
@@ -103,21 +122,27 @@ void MountTrayApp::addMenuItem(QString device, QString name)
 void MountTrayApp::removeMenuItem(QString device)
 {
     QWidgetAction *action = 0;
-    if (_menu_items.contains(device))
+    if (_disk_menu_items.contains(device))
     {
-        action = _menu_items[device];
-        _menu->removeAction(action);
-        _menu_items.remove(device);
+        action = _disk_menu_items[device];
+        _disk_menu->removeAction(action);
+        _disk_menu_items.remove(device);
         delete action;
+    }
+
+    if (_disk_menu_items.count() == 0)
+    {
+        QAction *empty_action = _disk_menu->addAction(tr("Empty"));
+        empty_action->setEnabled(false);
     }
 }
 
 void MountTrayApp::updateMenuItem(QString device, QString name, bool is_mounted)
 {
     QWidgetAction *action = 0;
-    if (_menu_items.contains(device))
+    if (_disk_menu_items.contains(device))
     {
-        action = _menu_items[device];
+        action = _disk_menu_items[device];
         MenuDiskItem *item = static_cast<MenuDiskItem*>(action->defaultWidget());
 
         if (item == 0)
@@ -205,7 +230,7 @@ void MountTrayApp::onDbusDeviceChangesMessage(QDBusObjectPath device)
 void MountTrayApp::onMediaMount(QString device)
 {
     std::cout << "Mount media: " << qPrintable(device) << "\n";
-    _menu->hide();
+    _disk_menu->hide();
 
     StorageItem *item = _sm.getDevice(device);
     if (item == NULL)
@@ -242,7 +267,7 @@ void MountTrayApp::onMediaMount(QString device)
 void MountTrayApp::onMediaEject(QString device)
 {
     std::cout << "UnMount media: " << qPrintable(device) << "\n";
-    _menu->hide();
+    _disk_menu->hide();
 
     StorageItem *item = _sm.getDevice(device);
     if (item == NULL)
@@ -264,5 +289,22 @@ void MountTrayApp::onMediaEject(QString device)
 
     showMessage(tr("Device '%1' is unmounted").arg(device));
     updateMenuItem(device, "", false);
+}
+
+void MountTrayApp::onTrayActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason)
+    {
+        case QSystemTrayIcon::Trigger:
+        {
+            _disk_menu->popup(QCursor::pos());
+            break;
+        }
+
+        default:
+        {
+            return;
+        }
+    }
 }
 

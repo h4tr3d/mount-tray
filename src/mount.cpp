@@ -22,7 +22,7 @@
 
 #include "mount.h"
 
-static bool mountClassic(QString &device, QString &mount_point, QString fs, QString options)
+static bool mountClassic(const QString &device, QString &mount_point, const QString &fs, const QString &options)
 {
     Q_UNUSED(device);
     Q_UNUSED(mount_point);
@@ -33,14 +33,14 @@ static bool mountClassic(QString &device, QString &mount_point, QString fs, QStr
     return false;
 }
 
-static bool unmountClassic(QString &device)
+static bool unmountClassic(const QString &device)
 {
     Q_UNUSED(device);
     // TODO
     return false;
 }
 
-static bool mountUdisks(QString &device, QString &mount_point, QString fs, QString options)
+static bool mountUdisks(const QString &device, QString &mount_point, const QString &fs, const QString &options)
 {
     QProcess    mount;
     QString     command = "udisks";
@@ -112,10 +112,10 @@ static bool unmountUdisks(QString &device)
 
 
 bool diskMount(MountingType  type,
-               QString      &device,
-               QString      &mount_point,
-               QString      fs,
-               QString      options)
+               const QString      &device,
+               QString            &mount_point,
+               const QString      &fs,
+               const QString      &options )
 {
     bool result = false;
     switch (type)
@@ -129,6 +129,7 @@ bool diskMount(MountingType  type,
         case UDISKS:
         {
             result = mountUdisks(device, mount_point, fs, options);
+            break;
         }
     }
 
@@ -161,7 +162,9 @@ QStringList isMounted(QString name, MountCheck check)
 
     QFile file("/etc/mtab");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
         return return_value;
+    }
 
     QTextStream in(&file);
     while(!in.atEnd())

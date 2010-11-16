@@ -137,11 +137,8 @@ void DiskMonitor::run()
 
         fillDiskInfo(device);
 
-        if (_disk_info.raw_info["DEVTYPE"] == "partition")
+        if (_disk_info.raw_info["ID_FS_USAGE"] == "filesystem")
         {
-            //std::cout << action.toAscii().data() << ": "
-            //          << devnode.toAscii().data() << std::endl;
-
             if (action == "add")
             {
                 // emit signal
@@ -196,6 +193,30 @@ void DiskMonitor::fillDiskInfo(struct udev_device *device, DiskInfo &info)
                         .arg(info.raw_info["ID_VENDOR"])
                         .arg(info.raw_info["ID_MODEL"]);
     }
+
+    info.raw_info.insert("REMOVABLE", "0");
+
+    // Check removable attr
+    struct udev_device *parent = 0;
+    if (info.raw_info["DEVTYPE"] == "partition")
+    {
+        parent = udev_device_get_parent(device);
+    }
+    else if (info.raw_info["DEVTYPE"] == "disk")
+    {
+        parent = device; // disk without partitions
+    }
+
+    if (parent != 0)
+    {
+        const char *value = udev_device_get_sysattr_value(parent, "removable");
+
+        if (value != NULL)
+        {
+            info.raw_info["REMOVABLE"] = value;
+        }
+    }
+
 }
 
 QList<DiskInfo *> DiskMonitor::scanDevices()
@@ -227,30 +248,24 @@ QList<DiskInfo *> DiskMonitor::scanDevices()
         }
 
         disk = new DiskInfo();
-
         fillDiskInfo(device, *disk);
 
-        if (disk->raw_info["DEVTYPE"] == "partition")
-        {
-            struct udev_device *parent = udev_device_get_parent(device);
-            if (parent == NULL)
-            {
-                delete disk;
-                continue;
-            }
+        const char *name  = udev_list_entry_get_name(entry);
 
-            const char *value = udev_device_get_sysattr_value(parent, "removable");
-            std::cout << "isRemovable: " << (value != NULL ? value : "unknown") << std::endl;
-            if (value != NULL && value[0] == '1')
-            {
-                const char *name = udev_list_entry_get_name(entry);
-                std::cout << "Entry: " << name << std::endl;
-                disks.append(disk);
-            }
-            else
-            {
-                delete disk;
-            }
+        std::cout << "Entry:       " << name << std::endl;
+        std::cout << "isRemovable: "
+            << (!disk->raw_info["REMOVABLE"].isEmpty() ? qPrintable(disk->raw_info["REMOVABLE"]) : "unknown")
+            << std::endl;
+
+
+        if (disk->raw_info["ID_FS_USAGE"] == "filesystem" &&
+            disk->raw_info["REMOVABLE"]   == "1")
+        {
+            disks.append(disk);
+        }
+        else
+        {
+            delete disk;
         }
 
         udev_device_unref(device);

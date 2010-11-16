@@ -132,19 +132,38 @@ void DiskMonitor::run()
             continue;
         }
 
-        QString action  = udev_device_get_action(device);
-        QString devnode = udev_device_get_devnode(device);
+        QString action     = udev_device_get_action(device);
+        QString new_action = action;
+        QString devnode    = udev_device_get_devnode(device);
 
         fillDiskInfo(device);
 
-        if (_disk_info.raw_info["ID_FS_USAGE"] == "filesystem")
+        if (action == "change")
         {
-            if (action == "add")
+            // For CD/DVD
+            if (_disk_info.raw_info["ID_TYPE"]              == "cd" ||
+                _disk_info.raw_info["ID_CDROM_MEDIA_STATE"] != "blank") // ignore blanks disks
+            {
+                if (_disk_info.raw_info["ID_CDROM_MEDIA"] == "1") // Media present
+                {
+                    new_action = "add";
+                }
+                else
+                {
+                    new_action = "remove";
+                }
+            }
+        }
+
+        if (_disk_info.raw_info["ID_FS_USAGE"] == "filesystem" ||
+            _disk_info.raw_info["ID_TYPE"]     == "cd")
+        {
+            if (new_action == "add")
             {
                 // emit signal
                 emit deviceConnected(_disk_info);
             }
-            else if (action == "remove")
+            else if (new_action == "remove")
             {
                 // emit signal
                 emit deviceDisconnected(_disk_info);
@@ -260,6 +279,11 @@ QList<DiskInfo *> DiskMonitor::scanDevices()
 
         if (disk->raw_info["ID_FS_USAGE"] == "filesystem" &&
             disk->raw_info["REMOVABLE"]   == "1")
+        {
+            disks.append(disk);
+        }
+        else if (disk->raw_info["ID_TYPE"]              == "cd" &&
+                 disk->raw_info["ID_CDROM_MEDIA_STATE"] != "blank")
         {
             disks.append(disk);
         }

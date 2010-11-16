@@ -283,6 +283,7 @@ QList<DiskInfo *> DiskMonitor::scanDevices()
             disks.append(disk);
         }
         else if (disk->raw_info["ID_TYPE"]              == "cd" &&
+                 disk->raw_info["ID_CDROM_MEDIA"]       == "1"  &&
                  disk->raw_info["ID_CDROM_MEDIA_STATE"] != "blank")
         {
             disks.append(disk);

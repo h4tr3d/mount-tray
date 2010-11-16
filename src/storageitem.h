@@ -41,8 +41,8 @@ public:
 
     void   setMountStatus(bool is_mounted, QString mount_point = QString());
 
-    void    mount();
-    void    unmount();
+    bool    mount(QString &text_status);
+    bool    unmount(QString &text_status);
 
 signals:
     void deviceMounted(QString device_name);

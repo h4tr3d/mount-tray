@@ -22,10 +22,11 @@
 
 #include "mount.h"
 
-static bool mountClassic(const QString &device, QString &mount_point, const QString &fs, const QString &options)
+static bool mountClassic(const QString &device, QString &mount_point, QString &status, const QString &fs, const QString &options)
 {
     Q_UNUSED(device);
     Q_UNUSED(mount_point);
+    Q_UNUSED(status);
     Q_UNUSED(fs);
     Q_UNUSED(options);
 
@@ -33,18 +34,21 @@ static bool mountClassic(const QString &device, QString &mount_point, const QStr
     return false;
 }
 
-static bool unmountClassic(const QString &device)
+static bool unmountClassic(const QString &device, QString &status)
 {
     Q_UNUSED(device);
+    Q_UNUSED(status);
     // TODO
     return false;
 }
 
-static bool mountUdisks(const QString &device, QString &mount_point, const QString &fs, const QString &options)
+static bool mountUdisks(const QString &device, QString &mount_point, QString &status, const QString &fs, const QString &options)
 {
     QProcess    mount;
     QString     command = "udisks";
     QStringList args;
+
+    mount.setProcessChannelMode(QProcess::MergedChannels);
 
     args << "--mount";
 
@@ -63,48 +67,89 @@ static bool mountUdisks(const QString &device, QString &mount_point, const QStri
     mount.start(command, args);
     if (!mount.waitForStarted())
     {
+        status = "Trouble with mount: start issue";
         return false;
     }
 
     if (!mount.waitForFinished())
     {
+        status = "Trouble with mount: finish issue";
         return false;
     }
 
+    //int code       = mount.exitCode();
+    bool is_ok     = false;
     QString buffer = mount.readAll();
-    QStringList list = buffer.trimmed().split(" ", QString::SkipEmptyParts);
-    if (list.count() == 4)
+
+
+    // Stupid 'udisks' in any cases return 0 exit status!
+    if (buffer.contains(QRegExp("^Mount failed:", Qt::CaseInsensitive)) == false)
     {
-        mount_point = list.at(3);
+        is_ok = true;
     }
 
-    int code = mount.exitCode();
-    return (code == 0 ? true : false);
+    if (is_ok == true)
+    {
+        QStringList list = buffer.trimmed().split(" ", QString::SkipEmptyParts);
+        if (list.count() == 4)
+        {
+            mount_point = list.at(3);
+        }
+        status = "Ok";
+    }
+    else
+    {
+        status = buffer;
+    }
+
+
+    return is_ok;
 }
 
-static bool unmountUdisks(QString &device)
+static bool unmountUdisks(const QString &device, QString &status)
 {
     QProcess    unmount;
     QString     command = "udisks";
     QStringList args;
+
+    unmount.setProcessChannelMode(QProcess::MergedChannels);
 
     args << "--unmount" << device;
 
     unmount.start(command, args);
     if (!unmount.waitForStarted())
     {
-        std::cout << "Trouble with unmount: start issue" << std::endl;
+        status = "Trouble with unmount: start issue";
         return false;
     }
 
     if (!unmount.waitForFinished())
     {
-        std::cout << "Trouble with unmount: finish issue" << std::endl;
+        status = "Trouble with unmount: finish issue";
         return false;
     }
 
-    int code = unmount.exitCode();
-    return (code == 0 ? true : false);
+    //int code       = unmount.exitCode();
+    bool is_ok     = false;
+    QString buffer = unmount.readAll();
+
+
+    // Stupid 'udisks' in any cases return 0 exit status!
+    if (buffer.contains(QRegExp("^Unmount failed:", Qt::CaseInsensitive)) == false)
+    {
+        is_ok = true;
+    }
+
+    if (is_ok == true)
+    {
+        status = "Ok";
+    }
+    else
+    {
+        status = buffer;
+    }
+
+    return is_ok;
 }
 
 
@@ -114,6 +159,7 @@ static bool unmountUdisks(QString &device)
 bool diskMount(MountingType  type,
                const QString      &device,
                QString            &mount_point,
+               QString            &status,
                const QString      &fs,
                const QString      &options )
 {
@@ -122,13 +168,13 @@ bool diskMount(MountingType  type,
     {
         case CLASSIC:
         {
-            result = mountClassic(device, mount_point, fs, options);
+            result = mountClassic(device, mount_point, status, fs, options);
             break;
         }
 
         case UDISKS:
         {
-            result = mountUdisks(device, mount_point, fs, options);
+            result = mountUdisks(device, mount_point, status, fs, options);
             break;
         }
     }
@@ -136,20 +182,20 @@ bool diskMount(MountingType  type,
     return result;
 }
 
-bool diskUnMount(MountingType type, QString &device)
+bool diskUnMount(MountingType type, const QString &device, QString &status)
 {
     bool result = false;
     switch (type)
     {
         case CLASSIC:
         {
-            result = unmountClassic(device);
+            result = unmountClassic(device, status);
             break;
         }
 
         case UDISKS:
         {
-            result = unmountUdisks(device);
+            result = unmountUdisks(device, status);
         }
     }
 

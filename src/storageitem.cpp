@@ -56,9 +56,9 @@ bool StorageItem::isMounted()
     return _is_mounted;
 }
 
-void StorageItem::mount()
+bool StorageItem::mount(QString &text_status)
 {
-    bool status = ::diskMount(UDISKS, _udev_info.device_name, _mount_point);
+    bool status = ::diskMount(UDISKS, _udev_info.device_name, _mount_point, text_status);
     if (status)
     {
         _is_mounted = true;
@@ -72,19 +72,24 @@ void StorageItem::mount()
             else
             {
                 _is_mounted = false;
+                status      = false;
             }
         }
     }
+
+    return status;
 }
 
-void StorageItem::unmount()
+bool StorageItem::unmount(QString &text_status)
 {
-    bool status = ::diskUnMount(UDISKS, _udev_info.device_name);
+    bool status = ::diskUnMount(UDISKS, _udev_info.device_name, text_status);
     if (status)
     {
         _is_mounted  = false;
         _mount_point = QString();
     }
+
+    return status;
 }
 
 void StorageItem::setMountStatus(bool is_mounted, QString mount_point)

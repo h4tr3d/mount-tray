@@ -238,10 +238,11 @@ void MountTrayApp::onMediaMount(QString device)
         return;
     }
 
-    bool old_state = item->isMounted();
+    bool    old_state   = item->isMounted();
+    QString status_text;
     if (!item->isMounted())
     {
-        item->mount();
+        item->mount(status_text);
     }
 
     QString mount_point = item->getMountPoint();
@@ -249,7 +250,7 @@ void MountTrayApp::onMediaMount(QString device)
     if (!item->isMounted())
     {
         // Error
-        showError(tr("Can't mount device: %1").arg(device));
+        showError(tr("Can't mount device: %1\n%2").arg(device).arg(status_text));
         return;
     }
 
@@ -275,15 +276,16 @@ void MountTrayApp::onMediaEject(QString device)
         return;
     }
 
+    QString status_text;
     if (item->isMounted())
     {
-        item->unmount();
+        item->unmount(status_text);
     }
 
     if (item->isMounted())
     {
         // Error
-        showError(tr("Can't unmount device: %1").arg(device));
+        showError(tr("Can't unmount device: %1\n%2").arg(device).arg(status_text));
         return;
     }
 

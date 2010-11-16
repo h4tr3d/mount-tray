@@ -31,14 +31,16 @@ typedef enum {
     UDISKS
 } MountingType;
 
-bool diskMount(MountingType  type,
+bool diskMount(MountingType        type,
                const QString      &device,
-               QString      &mount_point,
+               QString            &mount_point,
+               QString            &status,
                const QString      &fs      = QString(),
                const QString      &options = QString());
 
-bool diskUnMount(MountingType  type,
-                 QString      &device);
+bool diskUnMount(MountingType        type,
+                 const QString      &device,
+                 QString            &status);
 
 QStringList isMounted(QString name, MountCheck check);
 

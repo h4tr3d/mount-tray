@@ -48,6 +48,8 @@ private slots:
 
     void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
 
+    void onAbout();
+
 private:
     void initialScanDevices();
     void addMenuItem(QString device, QString name);

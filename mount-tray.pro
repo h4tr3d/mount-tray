@@ -29,7 +29,8 @@ HEADERS  += \
     src/storageitem.h \
     src/mount.h \
     src/diskmonitor.h \
-    src/menudiskitem.h
+    src/menudiskitem.h \
+    src/version.h
 
 RESOURCES += \
     main.qrc

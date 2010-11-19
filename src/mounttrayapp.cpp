@@ -18,10 +18,12 @@
 
 #include <iostream>
 
+#include <QMessageBox>
 #include <QDesktopServices>
 #include <QUrl>
 
 #include "mounttrayapp.h"
+#include "version.h"
 
 MountTrayApp::MountTrayApp(int & argc, char ** argv) :
     QApplication(argc, argv)
@@ -31,6 +33,9 @@ MountTrayApp::MountTrayApp(int & argc, char ** argv) :
         std::cout << "Can't connect to dbus daemon. Some functions will be omited\n";
     }
 
+    setWindowIcon(QIcon(":/ui/images/diskette.png"));
+    setQuitOnLastWindowClosed(false);
+
     // Display disk menu
     _disk_menu            = new QMenu();
     QAction *empty_action = _disk_menu->addAction(tr("Empty"));
@@ -38,8 +43,9 @@ MountTrayApp::MountTrayApp(int & argc, char ** argv) :
 
     // Exit, config and etc menu
     _main_menu = new QMenu();
+    _main_menu->addAction(tr("About"), this, SLOT(onAbout()));
     _main_menu->addSeparator();
-    _main_menu->addAction("Exit", this, SLOT(quit()));
+    _main_menu->addAction(tr("Exit"), this, SLOT(quit()));
 
     _tray_icon.setIcon(QIcon(":/ui/images/diskette.png"));
     _tray_icon.show();
@@ -70,6 +76,9 @@ MountTrayApp::MountTrayApp(int & argc, char ** argv) :
 MountTrayApp::~MountTrayApp()
 {
     _dm.exit(0);
+    _dm.wait(1000);
+    _dm.terminate();
+    _dm.wait();
 }
 
 void MountTrayApp::initialScanDevices()
@@ -308,5 +317,29 @@ void MountTrayApp::onTrayActivated(QSystemTrayIcon::ActivationReason reason)
             return;
         }
     }
+}
+
+void MountTrayApp::onAbout()
+{
+    int     develop_begin = 2010;
+    QDate   date          = QDate::currentDate();
+    QString date_text     = QString("%1").arg(develop_begin);
+
+    if (date.year() > develop_begin)
+    {
+        date_text += QString("-%1").arg(date.year());
+    }
+
+    QMessageBox::about(0, tr("About MountTray"),
+                       tr("<h2>About MountTray</h2>"
+                          "<p>Version: " APP_VERSION_FULL "</p>"
+                          "<p>Application for mounting and unmounting removable storages via system tray using udisks</p>\n"
+                          "<p>This programm distributed under GPLv2 terms. Full license text "
+                          "see in LICENSE file</p>\n"
+                          "<p>Site: <a href=http://gitorious.org/h4tr3d-utils/pages/MountTray>http://gitorious.org/h4tr3d-utils/pages/MountTray</a></p>\n"
+                          "<p>Copyright %1 Alexander 'hatred' Drozdov</p>"
+                          "<p><strong>Authors:</strong></p>"
+                          "<p>Alexander Drozdov - idea, programming</p>")
+                          .arg(date_text));
 }
 

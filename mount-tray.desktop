@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=MountTray
+GenericName=MountTray
+Comment=Application for mounting and unmounting removable storages via system tray using udisks
+Comment[ru]=Приложение для монтирования и демонтирования сменных накопителей через трей, использую udisks
+Icon=mount-tray.png
+Exec=mount-tray
+Categories=System;Utility;

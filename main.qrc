@@ -2,5 +2,6 @@
     <qresource prefix="/ui">
         <file>images/diskette.png</file>
         <file>images/eject.png</file>
+        <file>images/diskette-64x64.png</file>
     </qresource>
 </RCC>

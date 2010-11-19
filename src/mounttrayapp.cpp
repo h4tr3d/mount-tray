@@ -33,7 +33,7 @@ MountTrayApp::MountTrayApp(int & argc, char ** argv) :
         std::cout << "Can't connect to dbus daemon. Some functions will be omited\n";
     }
 
-    setWindowIcon(QIcon(":/ui/images/diskette.png"));
+    setWindowIcon(QIcon(":/ui/images/diskette-64x64.png"));
     setQuitOnLastWindowClosed(false);
 
     // Display disk menu
@@ -47,7 +47,7 @@ MountTrayApp::MountTrayApp(int & argc, char ** argv) :
     _main_menu->addSeparator();
     _main_menu->addAction(tr("Exit"), this, SLOT(quit()));
 
-    _tray_icon.setIcon(QIcon(":/ui/images/diskette.png"));
+    _tray_icon.setIcon(QIcon(":/ui/images/diskette-64x64.png"));
     _tray_icon.show();
     _tray_icon.setContextMenu(_main_menu);
 

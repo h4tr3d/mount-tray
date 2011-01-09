@@ -1,6 +1,6 @@
 # Contributor: Alexander Drozdov <adrozdoff@gmail.com>
 pkgname=mount-tray
-pkgver=1.2.2
+pkgver=1.2.3
 pkgrel=1
 pkgdesc="Application for mounting and unmounting removable storages via system tray using udisks"
 arch=(i686 x86_64)

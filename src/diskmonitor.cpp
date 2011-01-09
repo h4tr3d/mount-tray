@@ -141,7 +141,7 @@ void DiskMonitor::run()
         if (action == "change")
         {
             // For CD/DVD
-            if (_disk_info.raw_info["ID_TYPE"]              == "cd" ||
+            if (_disk_info.raw_info["ID_TYPE"]              == "cd" &&
                 _disk_info.raw_info["ID_CDROM_MEDIA_STATE"] != "blank") // ignore blanks disks
             {
                 if (_disk_info.raw_info["ID_CDROM_MEDIA"] == "1") // Media present

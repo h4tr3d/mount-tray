@@ -6,7 +6,7 @@
     @date   2010-06-06
     @brief  DiskMonitor - watch udev and detect adding and removing block devices
 
-    Copyright (C) 2010 by hatred <hatred@inbox.ru>
+    Copyright (C) 2010-2011 by hatred <hatred@inbox.ru>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the version 2 of GNU General Public License as
@@ -32,6 +32,7 @@
 #include <QStringList>
 #include <QFileInfo>
 #include <QMetaType>
+#include <QDebug>
 
 #include "diskmonitor.h"
 
@@ -238,6 +239,9 @@ void DiskMonitor::fillDiskInfo(struct udev_device *device, DiskInfo &info)
 
 }
 
+#warning "TODO: disk without partition (like Digma e600 Book Reader) detection is wrong." \
+         "udev provide very short info, so I can detect FS on this partitions." \
+         "Runtime detection (connect/disconnect) work well."
 QList<DiskInfo *> DiskMonitor::scanDevices()
 {
     DiskInfo          *disk;
@@ -275,7 +279,6 @@ QList<DiskInfo *> DiskMonitor::scanDevices()
         std::cout << "isRemovable: "
             << (!disk->raw_info["REMOVABLE"].isEmpty() ? qPrintable(disk->raw_info["REMOVABLE"]) : "unknown")
             << std::endl;
-
 
         if (disk->raw_info["ID_FS_USAGE"] == "filesystem" &&
             disk->raw_info["REMOVABLE"]   == "1")

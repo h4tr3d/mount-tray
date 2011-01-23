@@ -42,6 +42,6 @@ bool diskUnMount(MountingType        type,
                  const QString      &device,
                  QString            &status);
 
-QStringList isMounted(QString name, MountCheck check);
+QStringList isMounted(const QString &name, MountCheck check);
 
 #endif // MOUNT_H

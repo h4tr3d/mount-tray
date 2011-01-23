@@ -92,7 +92,7 @@ bool StorageItem::unmount(QString &text_status)
     return status;
 }
 
-void StorageItem::setMountStatus(bool is_mounted, QString mount_point)
+void StorageItem::setMountStatus(bool is_mounted, const QString &mount_point)
 {
     _is_mounted = is_mounted;
 

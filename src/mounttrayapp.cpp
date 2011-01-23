@@ -100,7 +100,7 @@ void MountTrayApp::initialScanDevices()
     }
 }
 
-void MountTrayApp::addMenuItem(QString device, QString name)
+void MountTrayApp::addMenuItem(const QString &device, const QString &name)
 {
     MenuDiskItem  *item   = new MenuDiskItem(device, name);
     QWidgetAction *action = new QWidgetAction(this);
@@ -128,7 +128,7 @@ void MountTrayApp::addMenuItem(QString device, QString name)
             this, SLOT(onMediaEject(QString)));
 }
 
-void MountTrayApp::removeMenuItem(QString device)
+void MountTrayApp::removeMenuItem(const QString &device)
 {
     QWidgetAction *action = 0;
     if (_disk_menu_items.contains(device))
@@ -146,7 +146,7 @@ void MountTrayApp::removeMenuItem(QString device)
     }
 }
 
-void MountTrayApp::updateMenuItem(QString device, QString name, bool is_mounted)
+void MountTrayApp::updateMenuItem(const QString &device, const QString &name, bool is_mounted)
 {
     QWidgetAction *action = 0;
     if (_disk_menu_items.contains(device))
@@ -168,12 +168,12 @@ void MountTrayApp::updateMenuItem(QString device, QString name, bool is_mounted)
     }
 }
 
-void MountTrayApp::showMessage(QString text)
+void MountTrayApp::showMessage(const QString &text)
 {
     _tray_icon.showMessage("MountTray", text);
 }
 
-void MountTrayApp::showError(QString text)
+void MountTrayApp::showError(const QString &text)
 {
     _tray_icon.showMessage("MountTray Error", text, QSystemTrayIcon::Critical);
 }

@@ -23,7 +23,7 @@ StorageManager::StorageManager(QObject *parent) :
 {
 }
 
-void StorageManager::addDevice(DiskInfo info)
+void StorageManager::addDevice(const DiskInfo &info)
 {
     StorageItem *item = new StorageItem(info);
     if (item == NULL)
@@ -35,13 +35,13 @@ void StorageManager::addDevice(DiskInfo info)
     _storage_items.insert(name, item);
 }
 
-void StorageManager::removeDevice(DiskInfo info)
+void StorageManager::removeDevice(const DiskInfo &info)
 {
     QString name = info.device_name;
     removeDevice(name);
 }
 
-void StorageManager::removeDevice(QString dev_name)
+void StorageManager::removeDevice(const QString &dev_name)
 {
     StorageItem *item = getDevice(dev_name);
 
@@ -59,7 +59,7 @@ QList<StorageItem *> StorageManager::getDevices()
     return _storage_items.values();
 }
 
-StorageItem * StorageManager::getDevice(QString dev_name)
+StorageItem * StorageManager::getDevice(const QString &dev_name)
 {
     StorageItem *item = 0;
 
@@ -71,7 +71,7 @@ StorageItem * StorageManager::getDevice(QString dev_name)
     return item;
 }
 
-StorageItem * StorageManager::getDevice(DiskInfo info)
+StorageItem * StorageManager::getDevice(const DiskInfo &info)
 {
     return getDevice(info.device_name);
 }

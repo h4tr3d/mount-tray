@@ -27,9 +27,9 @@ class MenuDiskItem : public QWidget, private Ui::MenuDiskItem
 
 public:
     explicit MenuDiskItem(QWidget *parent = 0);
-    explicit MenuDiskItem(QString device, QString name = "", bool is_mount = false, QWidget *parent = 0);
+    explicit MenuDiskItem(const QString &device, const QString &name = "", bool is_mount = false, QWidget *parent = 0);
 
-    void     setLabel(QString text);
+    void     setLabel(const QString &text);
     void     setMountStatus(bool is_mount);
 
 signals:

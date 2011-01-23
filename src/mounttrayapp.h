@@ -52,12 +52,12 @@ private slots:
 
 private:
     void initialScanDevices();
-    void addMenuItem(QString device, QString name);
-    void removeMenuItem(QString device);
-    void updateMenuItem(QString device, QString name, bool is_mounted);
+    void addMenuItem(const QString &device, const QString &name);
+    void removeMenuItem(const QString &device);
+    void updateMenuItem(const QString &device, const QString &name, bool is_mounted);
 
-    void showMessage(QString text);
-    void showError(QString text);
+    void showMessage(const QString &text);
+    void showError(const QString &text);
 
 private:
     QSystemTrayIcon                 _tray_icon;

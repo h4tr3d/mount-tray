@@ -27,7 +27,7 @@ MenuDiskItem::MenuDiskItem(QWidget *parent) :
     setMountStatus(false);
 }
 
-MenuDiskItem::MenuDiskItem(QString device, QString name, bool is_mount, QWidget *parent) :
+MenuDiskItem::MenuDiskItem(const QString &device, const QString &name, bool is_mount, QWidget *parent) :
     QWidget(parent)
 {
     setupUi(this);
@@ -51,15 +51,16 @@ void MenuDiskItem::changeEvent(QEvent *e)
     }
 }
 
-void MenuDiskItem::setLabel(QString text)
+void MenuDiskItem::setLabel(const QString &text)
 {
-    if (text.isEmpty())
+    QString label = text;
+    if (label.isEmpty())
     {
-        text = _device;
+        label = _device;
     }
 
-    text = QString("<a href=\"%1\">%1</a>").arg(text);
-    diskLabel->setText(text);
+    label = QString("<a href=\"%1\">%1</a>").arg(label);
+    diskLabel->setText(label);
 }
 
 void MenuDiskItem::setMountStatus(bool is_mount)

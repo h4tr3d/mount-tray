@@ -39,7 +39,7 @@ public:
     bool    isMounted();
     QString getMountPoint();
 
-    void   setMountStatus(bool is_mounted, QString mount_point = QString());
+    void   setMountStatus(bool is_mounted, const QString &mount_point = QString());
 
     bool    mount(QString &text_status);
     bool    unmount(QString &text_status);

@@ -31,13 +31,13 @@ class StorageManager : public QObject
 public:
     explicit StorageManager(QObject *parent = 0);
 
-    void addDevice(DiskInfo info);
-    void removeDevice(DiskInfo info);
-    void removeDevice(QString dev_name);
+    void addDevice(const    DiskInfo &info);
+    void removeDevice(const DiskInfo &info);
+    void removeDevice(const QString  &dev_name);
 
     QList<StorageItem *> getDevices();
-    StorageItem         *getDevice(QString dev_name);
-    StorageItem         *getDevice(DiskInfo info);
+    StorageItem         *getDevice(const QString  &dev_name);
+    StorageItem         *getDevice(const DiskInfo &info);
 
 signals:
 

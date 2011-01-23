@@ -191,8 +191,8 @@ void DiskMonitor::fillDiskInfo(struct udev_device *device, DiskInfo &info)
     udev_list_entry_foreach(entry, property_list)
     {
         QString property_name  = udev_list_entry_get_name(entry);
-        QString property_value = udev_device_get_property_value(device,
-                                                                property_name.toAscii().data());
+        QString property_value = QString::fromLocal8Bit(udev_device_get_property_value(device,
+                                                                property_name.toAscii().data()));
 
         info.raw_info[property_name] = property_value;
     }

@@ -31,6 +31,7 @@ public:
 
     void     setLabel(const QString &text);
     void     setMountStatus(bool is_mount);
+    void     setIcon(const QIcon &icon);
 
 signals:
     void ejectMedia(QString media_dev);
@@ -46,6 +47,7 @@ private slots:
 private:
     QString _device;
     QString _name;
+    QIcon   _icon;
 };
 
 #endif // MENUDISKITEM_H

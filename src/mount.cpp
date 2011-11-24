@@ -18,6 +18,7 @@
 
 #include <iostream>
 
+#include <QDebug>
 #include <QProcess>
 
 #include "mount.h"
@@ -88,20 +89,18 @@ static bool mountUdisks(const QString &device, QString &mount_point, QString &st
         is_ok = true;
     }
 
-    if (is_ok == true)
+    QRegExp reg("^Mounted (.+) at (.+)$", Qt::CaseSensitive);
+    if (is_ok && reg.exactMatch(buffer))
     {
-        QStringList list = buffer.trimmed().split(" ", QString::SkipEmptyParts);
-        if (list.count() == 4)
-        {
-            mount_point = list.at(3);
-        }
+        mount_point = reg.cap(2).trimmed();
+        std::cout << "Mount point: " << mount_point.toStdString() << std::endl;
         status = "Ok";
     }
     else
     {
+        std::cout << "mount dir can't be match" << std::endl;
         status = buffer;
     }
-
 
     return is_ok;
 }
@@ -202,6 +201,34 @@ bool diskUnMount(MountingType type, const QString &device, QString &status)
     return result;
 }
 
+QString &replaceOctalEscapes(QString &text)
+{
+    QRegExp oct("\\\\0([0-9]{1,})");
+    QMap<QString, int> replaceMap;
+
+    qDebug() << "Input string: " << text;
+
+    int pos = 0;
+    while ((pos = oct.indexIn(text, pos)) != -1)
+    {
+        QString octalValueStr = oct.cap(1);
+        pos += oct.matchedLength();
+        int octalValue = octalValueStr.toInt(0, 8);
+
+        replaceMap.insert(QString("\\0%1").arg(octalValue, 0, 8), octalValue);
+    }
+
+    QMap<QString, int>::iterator i;
+    for (i = replaceMap.begin(); i != replaceMap.end(); ++i)
+    {
+        text.replace(i.key(), QString("%1").arg(QChar(i.value())));
+    }
+
+    qDebug() << "Output string: " << text;
+
+    return text;
+}
+
 QStringList isMounted(const QString &name, MountCheck check)
 {
     QStringList return_value;
@@ -219,6 +246,12 @@ QStringList isMounted(const QString &name, MountCheck check)
         QStringList parts = line.split(QRegExp("\\s+"));
         QString     value;
 
+        QStringList::iterator it;
+        for (it = parts.begin(); it != parts.end(); ++it)
+        {
+            (*it) = replaceOctalEscapes(*it);
+        }
+
         switch(check)
         {
             case MC_DEVICE:
@@ -229,6 +262,8 @@ QStringList isMounted(const QString &name, MountCheck check)
                 value = parts[1];
                 break;
         }
+
+        value = replaceOctalEscapes(value);
 
         if (value == name)
         {

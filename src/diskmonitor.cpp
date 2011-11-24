@@ -240,8 +240,8 @@ void DiskMonitor::fillDiskInfo(struct udev_device *device, DiskInfo &info)
 }
 
 #warning "TODO: disk without partition (like Digma e600 Book Reader) detection is wrong." \
-         "udev provide very short info, so I can detect FS on this partitions." \
-         "Runtime detection (connect/disconnect) work well."
+    "udev provide very short info, so I can't' detect FS on this partitions." \
+    "Runtime detection (connect/disconnect) work well."
 QList<DiskInfo *> DiskMonitor::scanDevices()
 {
     DiskInfo          *disk;

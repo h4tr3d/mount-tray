@@ -16,6 +16,8 @@
 
     ============================================================================================= */
 
+#include <QDebug>
+
 #include <iostream>
 
 #include "menudiskitem.h"
@@ -68,15 +70,17 @@ void MenuDiskItem::setMountStatus(bool is_mount)
     eject->setEnabled(is_mount);
 }
 
+void MenuDiskItem::setIcon(const QIcon &icon)
+{
+    // TODO
+}
+
 void MenuDiskItem::on_eject_clicked()
 {
-    //std::cout << "Eject: " << qPrintable(_device) << "\n";
-    //emit ejectMedia(_device);
     emit ejectMedia(_device);
 }
 
 void MenuDiskItem::on_diskLabel_linkActivated(QString /*link*/)
 {
-    //std::cout << "Link: " << qPrintable(link) << "\n";
     emit mountMedia(_device);
 }

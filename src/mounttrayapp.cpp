@@ -6,7 +6,7 @@
     @date   2010-11-11
     @brief  Main application class: integrate all components
 
-    Copyright (C) 2010 by hatred <hatred@inbox.ru>
+    Copyright (C) 2010-2011 by hatred <hatred@inbox.ru>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the version 2 of GNU General Public License as
@@ -18,6 +18,7 @@
 
 #include <iostream>
 
+#include <QDebug>
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QUrl>
@@ -30,10 +31,10 @@ MountTrayApp::MountTrayApp(int & argc, char ** argv) :
 {
     if (!QDBusConnection::systemBus().isConnected())
     {
-        std::cout << "Can't connect to dbus daemon. Some functions will be omited\n";
+        qDebug() << "Can't connect to dbus daemon. Some functions will be omited\n";
     }
 
-    setWindowIcon(QIcon(":/ui/images/diskette-64x64.png"));
+    setWindowIcon(QIcon(":/ui/images/icon.svgz"));
     setQuitOnLastWindowClosed(false);
 
     // Display disk menu
@@ -47,7 +48,7 @@ MountTrayApp::MountTrayApp(int & argc, char ** argv) :
     _main_menu->addSeparator();
     _main_menu->addAction(tr("Exit"), this, SLOT(quit()));
 
-    _tray_icon.setIcon(QIcon(":/ui/images/diskette-64x64.png"));
+    _tray_icon.setIcon(QIcon(":/ui/images/icon.svgz"));
     _tray_icon.show();
     _tray_icon.setContextMenu(_main_menu);
 
@@ -186,6 +187,8 @@ void MountTrayApp::onDiskAdded(DiskInfo info)
 {
     _sm.addDevice(info);
     addMenuItem(info.device_name, info.name);
+    StorageItem *sitem = _sm.getDevice(info);
+    updateMenuItem(info.device_name, info.file_system_label, sitem->isMounted());
     showMessage(tr("Device connected: %1").arg(info.device_name));
 }
 
@@ -244,6 +247,7 @@ void MountTrayApp::onMediaMount(QString device)
     StorageItem *item = _sm.getDevice(device);
     if (item == NULL)
     {
+        qDebug() << "Can't find Storage Item in Storage manager for device: " << device;
         return;
     }
 
@@ -270,7 +274,7 @@ void MountTrayApp::onMediaMount(QString device)
     }
 
     // Run manager
-    QDesktopServices::openUrl(QUrl(mount_point));
+    QDesktopServices::openUrl(QUrl("file://" + mount_point, QUrl::TolerantMode));
 
 }
 

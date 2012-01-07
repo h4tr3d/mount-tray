@@ -232,14 +232,21 @@ QString &replaceOctalEscapes(QString &text)
 QStringList isMounted(const QString &name, MountCheck check)
 {
     QStringList return_value;
+    QString     mtabFile = "/etc/mtab";
+    //QString     mtabFile = "/proc/self/mounts";
 
-    QFile file("/etc/mtab");
+    QFile file(mtabFile);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
+        qDebug() << "Can't open file: " << mtabFile << file.errorString();
         return return_value;
     }
 
-    QTextStream in(&file);
+    QByteArray data = file.readAll();
+    QTextStream in(data);
+
+    //qDebug() << mtabFile << file.errorString() << in.atEnd() << file.size() << data;
+
     while(!in.atEnd())
     {
         QString     line  = in.readLine();

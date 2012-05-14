@@ -4,5 +4,6 @@
         <file>images/eject.png</file>
         <file>images/diskette-64x64.png</file>
         <file>images/icon.svgz</file>
+        <file>images/inject.png</file>
     </qresource>
 </RCC>

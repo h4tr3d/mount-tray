@@ -124,7 +124,8 @@ void MountTrayApp::addMenuItem(const QString &device, const QString &name)
     // Connect signals
     connect(item, SIGNAL(mountMedia(QString)),
             this, SLOT(onMediaMount(QString)));
-
+    connect(item, SIGNAL(openMedia(QString)),
+            this, SLOT(onMediaOpen(QString)));
     connect(item, SIGNAL(ejectMedia(QString)),
             this, SLOT(onMediaEject(QString)));
 }
@@ -239,7 +240,25 @@ void MountTrayApp::onDbusDeviceChangesMessage(QDBusObjectPath device)
     }
 }
 
-void MountTrayApp::onMediaMount(QString device)
+void MountTrayApp::onMediaOpen(const QString &device)
+{
+    StorageItem *item = _sm.getDevice(device);
+    if (item == NULL)
+    {
+        qDebug() << "Can't find Storage Item in Storage manager for device: " << device;
+        return;
+    }
+
+    onMediaMount(device);
+
+    QString mount_point = item->getMountPoint();
+
+    // Run manager
+    if (item->isMounted())
+        QDesktopServices::openUrl(QUrl("file://" + mount_point, QUrl::TolerantMode));
+}
+
+void MountTrayApp::onMediaMount(const QString &device)
 {
     std::cout << "Mount media: " << qPrintable(device) << "\n";
     _disk_menu->hide();
@@ -272,13 +291,9 @@ void MountTrayApp::onMediaMount(QString device)
         showMessage(tr("Device '%1' is mounted to %2").arg(device).arg(mount_point));
         updateMenuItem(device, "", true);
     }
-
-    // Run manager
-    QDesktopServices::openUrl(QUrl("file://" + mount_point, QUrl::TolerantMode));
-
 }
 
-void MountTrayApp::onMediaEject(QString device)
+void MountTrayApp::onMediaEject(const QString &device)
 {
     std::cout << "UnMount media: " << qPrintable(device) << "\n";
     _disk_menu->hide();

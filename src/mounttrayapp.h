@@ -43,8 +43,9 @@ private slots:
 
     void onDbusDeviceChangesMessage(QDBusObjectPath device);
 
-    void onMediaMount(QString device);
-    void onMediaEject(QString device);
+    void onMediaOpen(const QString &device);
+    void onMediaMount(const QString &device);
+    void onMediaEject(const QString &device);
 
     void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
 

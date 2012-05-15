@@ -94,7 +94,7 @@ void MountTrayApp::initialScanDevices()
         addMenuItem(disk->device_name, disk->name);
 
         StorageItem *sitem = _sm.getDevice(*disk);
-        updateMenuItem(disk->device_name, disk->file_system_label, sitem->isMounted());
+        updateMenuItem(disk->device_name, disk->file_system_label, sitem->isMounted(), sitem->getMediaType());
 
         // clear
         delete disk;
@@ -148,7 +148,7 @@ void MountTrayApp::removeMenuItem(const QString &device)
     }
 }
 
-void MountTrayApp::updateMenuItem(const QString &device, const QString &name, bool is_mounted)
+void MountTrayApp::updateMenuItem(const QString &device, const QString &name, bool is_mounted, MediaType mediaType)
 {
     QWidgetAction *action = 0;
     if (_disk_menu_items.contains(device))
@@ -167,6 +167,27 @@ void MountTrayApp::updateMenuItem(const QString &device, const QString &name, bo
         }
 
         item->setMountStatus(is_mounted);
+
+        std::cout << "Set icon: " << (int)mediaType << ", ";
+        switch (mediaType)
+        {
+            case MEDIA_CD:
+                std::cout << "CD\n";
+                item->setMediaIcon(QIcon(":/ui/images/devices/media-optical.png"));
+                break;
+            case MEDIA_DVD:
+                std::cout << "DVD\n";
+                item->setMediaIcon(QIcon(":/ui/images/devices/media-optical-dvd.png"));
+                break;
+            case MEDIA_USB:
+                std::cout << "USB\n";
+                item->setMediaIcon(QIcon(":/ui/images/devices/media-usb.png"));
+                break;
+            default:
+                std::cout << "DEFAULT\n";
+                item->setMediaIcon(QIcon(":/ui/images/devices/media-default.png"));
+                break;
+        }
     }
 }
 
@@ -189,7 +210,7 @@ void MountTrayApp::onDiskAdded(DiskInfo info)
     _sm.addDevice(info);
     addMenuItem(info.device_name, info.name);
     StorageItem *sitem = _sm.getDevice(info);
-    updateMenuItem(info.device_name, info.file_system_label, sitem->isMounted());
+    updateMenuItem(info.device_name, info.file_system_label, sitem->isMounted(), sitem->getMediaType());
     showMessage(tr("Device connected: %1").arg(info.device_name));
 }
 
@@ -224,7 +245,7 @@ void MountTrayApp::onDbusDeviceChangesMessage(QDBusObjectPath device)
 
     bool old_state = item->isMounted();
     item->setMountStatus(is_mounted);
-    updateMenuItem(dev_name, QString(), item->isMounted());
+    updateMenuItem(dev_name, QString(), item->isMounted(), item->getMediaType());
 
     if (item->isMounted() != old_state)
     {
@@ -289,7 +310,7 @@ void MountTrayApp::onMediaMount(const QString &device)
     if (item->isMounted() != old_state)
     {
         showMessage(tr("Device '%1' is mounted to %2").arg(device).arg(mount_point));
-        updateMenuItem(device, "", true);
+        updateMenuItem(device, "", true, item->getMediaType());
     }
 }
 
@@ -318,7 +339,7 @@ void MountTrayApp::onMediaEject(const QString &device)
     }
 
     showMessage(tr("Device '%1' is unmounted").arg(device));
-    updateMenuItem(device, "", false);
+    updateMenuItem(device, "", false, item->getMediaType());
 }
 
 void MountTrayApp::onTrayActivated(QSystemTrayIcon::ActivationReason reason)

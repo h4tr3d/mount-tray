@@ -55,7 +55,7 @@ private:
     void initialScanDevices();
     void addMenuItem(const QString &device, const QString &name);
     void removeMenuItem(const QString &device);
-    void updateMenuItem(const QString &device, const QString &name, bool is_mounted);
+    void updateMenuItem(const QString &device, const QString &name, bool is_mounted, MediaType mediaType);
 
     void showMessage(const QString &text);
     void showError(const QString &text);

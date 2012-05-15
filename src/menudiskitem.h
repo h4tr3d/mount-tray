@@ -33,6 +33,7 @@ public:
     void     setMountStatus(bool is_mount);
     void     setIconMounted(const QIcon &icon);
     void     setIconUnmounted(const QIcon &icon);
+    void     setMediaIcon(const QIcon &icon = QIcon());
 
 signals:
     void ejectMedia(QString media_dev);
@@ -51,6 +52,7 @@ private:
     QString name;
     QIcon   iconMounted;
     QIcon   iconUnmounted;
+    QIcon   diskIcon;
     bool    isMountedFlag;
 };
 

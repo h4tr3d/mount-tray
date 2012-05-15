@@ -5,5 +5,9 @@
         <file>images/diskette-64x64.png</file>
         <file>images/icon.svgz</file>
         <file>images/inject.png</file>
+        <file>images/devices/media-default.png</file>
+        <file>images/devices/media-optical.png</file>
+        <file>images/devices/media-usb.png</file>
+        <file>images/devices/media-optical-dvd.png</file>
     </qresource>
 </RCC>

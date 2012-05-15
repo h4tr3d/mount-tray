@@ -26,9 +26,19 @@
 
 typedef QMap<QString, QString> QUdevInfo;
 
+
+typedef enum {
+    MEDIA_DEFAULT,
+    MEDIA_USB,
+    MEDIA_CD,
+    MEDIA_DVD
+} MediaType;
+
+
 typedef struct _DiskInfo {
     _DiskInfo()
     {
+        media_type = MEDIA_DEFAULT;
     }
 
     QString name;               // Unified field for display device name
@@ -37,6 +47,8 @@ typedef struct _DiskInfo {
     QString file_system_type;   // File system name like 'vfat'
     QString file_system_label;  // Label, if set
     QString file_system_size;   // Only if found udisks entries
+
+    MediaType media_type;       // known media type
 
     QUdevInfo raw_info;         // Associtive massive of all udev's ops
 } DiskInfo;

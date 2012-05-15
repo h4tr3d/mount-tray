@@ -40,6 +40,7 @@ MenuDiskItem::MenuDiskItem(const QString &device, const QString &name, bool is_m
     this->device = device;
     this->name   = name;
 
+    setMediaIcon(QIcon(":/ui/images/devices/media-default.png"));
     setLabel(name);
     setMountStatus(is_mount);
 }
@@ -89,6 +90,11 @@ void MenuDiskItem::setIconMounted(const QIcon &icon)
 void MenuDiskItem::setIconUnmounted(const QIcon &icon)
 {
     iconUnmounted = icon;
+}
+
+void MenuDiskItem::setMediaIcon(const QIcon &icon)
+{
+    mediaIcon->setPixmap(icon.pixmap(mediaIcon->geometry().size()));
 }
 
 void MenuDiskItem::on_eject_clicked()

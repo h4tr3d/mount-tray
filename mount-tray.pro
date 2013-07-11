@@ -4,12 +4,12 @@
 #
 #-------------------------------------------------
 
-QT        += core gui
+QT        += core gui widgets dbus
 
 TARGET     = mount-tray
 TEMPLATE   = app
 
-CONFIG    += link_pkgconfig qdbus
+CONFIG    += link_pkgconfig
 PKGCONFIG += libudev
 
 #QMAKE_CXXFLAGS += -Wall -Wextra -pedantic

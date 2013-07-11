@@ -16,8 +16,8 @@
 
    ============================================================================================== */
 
-#include <QtGui/QApplication>
-#include <QtDBus/QtDBus>
+#include <QApplication>
+#include <QtDBus>
 
 #include "mounttrayapp.h"
 

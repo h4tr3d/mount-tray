@@ -202,6 +202,34 @@ void DiskMonitor::fillDiskInfo(struct udev_device *device, DiskInfo &info)
     info.file_system_type  = info.raw_info["ID_FS_TYPE"];
     info.file_system_label = info.raw_info["ID_FS_LABEL"];
     info.file_system_size  = info.raw_info["UDISKS_PARTITION_SIZE"];
+    info.media_type        = MEDIA_DEFAULT;
+
+    // Media type detection
+    if (info.raw_info.contains("ID_BUS") &&
+        info.raw_info["ID_BUS"] == "usb" &&
+        info.raw_info.contains("ID_USB_DRIVER")
+        /* && info.raw_info["ID_USB_DRIVER"] == "usb_storage" */)
+    {
+        info.media_type = MEDIA_USB;
+    }
+    else if (info.raw_info.contains("ID_CDROM_MEDIA") &&
+             info.raw_info["ID_CDROM_MEDIA"] == "1")
+    {
+        if (info.raw_info.contains("ID_CDROM_MEDIA_DVD") ||
+            info.raw_info.contains("ID_CDROM_MEDIA_DVD_PLUS_R") ||
+            info.raw_info.contains("ID_CDROM_MEDIA_DVD_PLUS_RW") ||
+            info.raw_info.contains("ID_CDROM_MEDIA_DVD_PLUS_R_DL") ||
+            info.raw_info.contains("ID_CDROM_MEDIA_DVD_R") ||
+            info.raw_info.contains("ID_CDROM_MEDIA_DVD_RAM") ||
+            info.raw_info.contains("ID_CDROM_MEDIA_DVD_RW"))
+        {
+            info.media_type = MEDIA_DVD;
+        }
+        else
+        {
+            info.media_type = MEDIA_CD;
+        }
+    }
 
     if (!info.file_system_label.isEmpty())
     {
@@ -279,6 +307,7 @@ QList<DiskInfo *> DiskMonitor::scanDevices()
         std::cout << "isRemovable: "
             << (!disk->raw_info["REMOVABLE"].isEmpty() ? qPrintable(disk->raw_info["REMOVABLE"]) : "unknown")
             << std::endl;
+        std::cout << "Media Type: " << disk->media_type << std::endl;
 
         if (disk->raw_info["ID_FS_USAGE"] == "filesystem" &&
             disk->raw_info["REMOVABLE"]   == "1")

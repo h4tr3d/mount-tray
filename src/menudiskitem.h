@@ -31,10 +31,13 @@ public:
 
     void     setLabel(const QString &text);
     void     setMountStatus(bool is_mount);
-    void     setIcon(const QIcon &icon);
+    void     setIconMounted(const QIcon &icon);
+    void     setIconUnmounted(const QIcon &icon);
+    void     setMediaIcon(const QIcon &icon = QIcon());
 
 signals:
     void ejectMedia(QString media_dev);
+    void openMedia(QString media_dev);
     void mountMedia(QString media_dev);
 
 protected:
@@ -45,9 +48,12 @@ private slots:
     void on_diskLabel_linkActivated(QString link);
 
 private:
-    QString _device;
-    QString _name;
-    QIcon   _icon;
+    QString device;
+    QString name;
+    QIcon   iconMounted;
+    QIcon   iconUnmounted;
+    QIcon   diskIcon;
+    bool    isMountedFlag;
 };
 
 #endif // MENUDISKITEM_H

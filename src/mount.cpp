@@ -20,8 +20,45 @@
 
 #include <QDebug>
 #include <QProcess>
+#include <QProcessEnvironment>
 
 #include "mount.h"
+
+/**
+ * Find executable in PATH or check it absolute or relative path for present
+ * @param executable
+ * @return absolute executable file path or empty string if executable can not be found in it
+ *         absolute or relative location or PATH location
+ */
+static QString findExecutable(const QString& executable)
+{
+    QFileInfo fi(executable);
+
+    if (fi.isAbsolute() || fi.fileName() != executable)
+    {
+        if (fi.exists())
+            return fi.absoluteFilePath();
+        else
+            return QString();
+    }
+
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    if (!env.contains(QLatin1String("PATH")))
+        return QString();
+
+    QString     path  = env.value(QLatin1String("PATH"));
+    QStringList paths = path.split(":");
+    foreach (QString p, paths)
+    {
+        QFileInfo pfi(QDir(p), executable);
+        qDebug() << "pfi: " << pfi.absoluteFilePath();
+
+        if (pfi.exists())
+            return pfi.absoluteFilePath();
+    }
+
+    return QString();
+}
 
 static bool mountClassic(const QString &device, QString &mount_point, QString &status, const QString &fs, const QString &options)
 {
@@ -43,27 +80,126 @@ static bool unmountClassic(const QString &device, QString &status)
     return false;
 }
 
+
+/**
+ * Adapter for udisks1 and udisks2
+ */
+struct Udisks
+{
+    enum Type
+    {
+        Unknown,
+        Udisks1,
+        Udisks2
+    };
+
+    enum Args
+    {
+        Mount,
+        Unmount,
+        FilesystemType,
+        MountOptions,
+        BlockDevice
+    };
+
+    Udisks()
+        : type(Unknown)
+    {
+        QString udisksctl = findExecutable("udisksctl");
+        if (udisksctl.isEmpty())
+        {
+            udisksctl = findExecutable("udisks");
+            if (!udisksctl.isEmpty())
+            {
+                type = Udisks1;
+                udisksExecutable            = udisksctl;
+                argsMapping[Mount]          = "--mount";
+                argsMapping[Unmount]        = "--unmount";
+                argsMapping[FilesystemType] = "--mount-fstype";
+                argsMapping[MountOptions]   = "--mount-options";
+            }
+        }
+        else
+        {
+            type = Udisks2;
+            udisksExecutable            = udisksctl;
+            argsMapping[Mount]          = "mount";
+            argsMapping[Unmount]        = "unmount";
+            argsMapping[FilesystemType] = "--filesystem-type";
+            argsMapping[MountOptions]   = "--options";
+            argsMapping[BlockDevice]    = "--block-device";
+        }
+    }
+
+
+    QString executable() const
+    {
+        return udisksExecutable;
+    }
+
+    QStringList mountArgs(const QString &device, QString &/*mount_point*/, const QString &fs, const QString &options) const
+    {
+        QStringList args;
+
+        addArg(args, Mount);
+        if (!fs.isEmpty())
+            addArg(args, FilesystemType, fs);
+        if (!options.isEmpty())
+            addArg(args, MountOptions, options);
+
+        addArg(args, BlockDevice, device);
+
+        qDebug() << "Udisks mount args: " << args;
+
+        return args;
+    }
+
+    QStringList unmountArgs(const QString &device) const
+    {
+        QStringList args;
+
+        addArg(args, Unmount);
+        addArg(args, BlockDevice, device);
+
+        qDebug() << "Udisks unmount args: " << args;
+
+        return args;
+    }
+
+private:
+    void addArg(QStringList &args, Args arg, const QString &optionalParam = QString()) const
+    {
+        if (argsMapping.contains(arg))
+        {
+            args << argsMapping[arg];
+        }
+
+        if (!optionalParam.isNull())
+        {
+            args << optionalParam;
+        }
+    }
+
+
+private:
+    Type type;
+    QString udisksExecutable;
+    QMap<Args, QString> argsMapping;
+};
+
+
+namespace {
+const Udisks udisksctl;
+}
+
+
 static bool mountUdisks(const QString &device, QString &mount_point, QString &status, const QString &fs, const QString &options)
 {
     QProcess    mount;
-    QString     command = "udisks";
-    QStringList args;
+    QString     command = udisksctl.executable();
+    QStringList args    = udisksctl.mountArgs(device, mount_point, fs, options);
 
     mount.setProcessChannelMode(QProcess::MergedChannels);
-
-    args << "--mount";
-
-    if (!fs.isEmpty())
-    {
-        args << "--mount-fstype" << fs;
-    }
-
-    if (!options.isEmpty())
-    {
-        args << "--mount-options" << options;
-    }
-
-    args << device;
 
     mount.start(command, args);
     if (!mount.waitForStarted())
@@ -108,12 +244,10 @@ static bool mountUdisks(const QString &device, QString &mount_point, QString &st
 static bool unmountUdisks(const QString &device, QString &status)
 {
     QProcess    unmount;
-    QString     command = "udisks";
-    QStringList args;
+    QString     command = udisksctl.executable();
+    QStringList args    = udisksctl.unmountArgs(device);
 
     unmount.setProcessChannelMode(QProcess::MergedChannels);
-
-    args << "--unmount" << device;
 
     unmount.start(command, args);
     if (!unmount.waitForStarted())

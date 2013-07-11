@@ -29,6 +29,7 @@ typedef enum {
     RC_UNMOUNT
 } RunCommand;
 
+
 class StorageItem : public QObject
 {
     Q_OBJECT
@@ -43,6 +44,8 @@ public:
 
     bool    mount(QString &text_status);
     bool    unmount(QString &text_status);
+
+    MediaType getMediaType();
 
 signals:
     void deviceMounted(QString device_name);

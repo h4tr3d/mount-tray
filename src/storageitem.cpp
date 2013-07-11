@@ -92,6 +92,11 @@ bool StorageItem::unmount(QString &text_status)
     return status;
 }
 
+MediaType StorageItem::getMediaType()
+{
+    return _udev_info.media_type;
+}
+
 void StorageItem::setMountStatus(bool is_mounted, const QString &mount_point)
 {
     _is_mounted = is_mounted;

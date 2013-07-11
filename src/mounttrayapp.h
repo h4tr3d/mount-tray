@@ -43,8 +43,9 @@ private slots:
 
     void onDbusDeviceChangesMessage(QDBusObjectPath device);
 
-    void onMediaMount(QString device);
-    void onMediaEject(QString device);
+    void onMediaOpen(const QString &device);
+    void onMediaMount(const QString &device);
+    void onMediaEject(const QString &device);
 
     void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
 
@@ -54,7 +55,7 @@ private:
     void initialScanDevices();
     void addMenuItem(const QString &device, const QString &name);
     void removeMenuItem(const QString &device);
-    void updateMenuItem(const QString &device, const QString &name, bool is_mounted);
+    void updateMenuItem(const QString &device, const QString &name, bool is_mounted, MediaType mediaType);
 
     void showMessage(const QString &text);
     void showError(const QString &text);

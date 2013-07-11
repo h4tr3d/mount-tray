@@ -34,10 +34,14 @@ MenuDiskItem::MenuDiskItem(const QString &device, const QString &name, bool is_m
 {
     setupUi(this);
 
-    _device = device;
-    _name   = name;
+    iconMounted = QIcon(":/ui/images/eject.png");
+    iconUnmounted = QIcon(":/ui/images/inject.png");
 
-    setLabel(_name);
+    this->device = device;
+    this->name   = name;
+
+    setMediaIcon(QIcon(":/ui/images/devices/media-default.png"));
+    setLabel(name);
     setMountStatus(is_mount);
 }
 
@@ -58,7 +62,7 @@ void MenuDiskItem::setLabel(const QString &text)
     QString label = text;
     if (label.isEmpty())
     {
-        label = _device;
+        label = device;
     }
 
     label = QString("<a href=\"%1\">%1</a>").arg(label);
@@ -67,20 +71,41 @@ void MenuDiskItem::setLabel(const QString &text)
 
 void MenuDiskItem::setMountStatus(bool is_mount)
 {
-    eject->setEnabled(is_mount);
+    isMountedFlag = is_mount;
+    if (isMountedFlag)
+    {
+        eject->setIcon(iconMounted);
+    }
+    else
+    {
+        eject->setIcon(iconUnmounted);
+    }
 }
 
-void MenuDiskItem::setIcon(const QIcon &icon)
+void MenuDiskItem::setIconMounted(const QIcon &icon)
 {
-    // TODO
+    iconMounted = icon;
+}
+
+void MenuDiskItem::setIconUnmounted(const QIcon &icon)
+{
+    iconUnmounted = icon;
+}
+
+void MenuDiskItem::setMediaIcon(const QIcon &icon)
+{
+    mediaIcon->setPixmap(icon.pixmap(mediaIcon->geometry().size()));
 }
 
 void MenuDiskItem::on_eject_clicked()
 {
-    emit ejectMedia(_device);
+    if (isMountedFlag)
+        emit ejectMedia(device);
+    else
+        emit mountMedia(device);
 }
 
 void MenuDiskItem::on_diskLabel_linkActivated(QString /*link*/)
 {
-    emit mountMedia(_device);
+    emit openMedia(device);
 }

@@ -23,6 +23,9 @@
 #include <QProcessEnvironment>
 
 #include "mount.h"
+#include "settings.h"
+
+namespace {
 
 /**
  * Find executable in PATH or check it absolute or relative path for present
@@ -60,39 +63,137 @@ static QString findExecutable(const QString& executable)
     return QString();
 }
 
-static bool mountClassic(const QString &device, QString &mount_point, QString &status, const QString &fs, const QString &options)
+/**
+ * Classic mounter, using mount/unmount commands
+ */
+class ClassicMounter : public Mounter
 {
-    Q_UNUSED(device);
-    Q_UNUSED(mount_point);
-    Q_UNUSED(status);
-    Q_UNUSED(fs);
-    Q_UNUSED(options);
+public:
+    bool mount(const QString &device, QString &mount_point, QString &status, const QString &fs, const QString &options)
+    {
+        Q_UNUSED(device);
+        Q_UNUSED(mount_point);
+        Q_UNUSED(status);
+        Q_UNUSED(fs);
+        Q_UNUSED(options);
 
-    // TODO
-    return false;
-}
+        // TODO
+        return false;
+    }
 
-static bool unmountClassic(const QString &device, QString &status)
-{
-    Q_UNUSED(device);
-    Q_UNUSED(status);
-    // TODO
-    return false;
-}
+    bool unmount(const QString &device, QString &status)
+    {
+        Q_UNUSED(device);
+        Q_UNUSED(status);
+        // TODO
+        return false;
+    }
+};
 
 
 /**
- * Adapter for udisks1 and udisks2
+ * Base class for the Udisks-based mounters (udisks1/2)
  */
-struct Udisks
+class UdisksBaseMounter : public Mounter
 {
-    enum Type
+public:
+    bool mount(const QString &device, QString &mount_point, QString &status, const QString &fs, const QString &options)
     {
-        Unknown,
-        Udisks1,
-        Udisks2
-    };
+        QProcess     mount;
+        QString     &command = udisksExecutable;
+        QStringList  args    = mountArgs(device, mount_point, fs, options);
 
+        mount.setProcessChannelMode(QProcess::MergedChannels);
+
+        mount.start(command, args);
+        if (!mount.waitForStarted())
+        {
+            status = "Trouble with mount: start issue";
+            return false;
+        }
+
+        if (!mount.waitForFinished())
+        {
+            status = "Trouble with mount: finish issue";
+            return false;
+        }
+
+        //int code       = mount.exitCode();
+        bool is_ok     = false;
+        QString buffer = mount.readAll();
+
+
+        // Stupid 'udisks' in any cases return 0 exit status!
+        if (buffer.contains(QRegExp("^Mount failed:", Qt::CaseInsensitive)) == false)
+        {
+            is_ok = true;
+        }
+
+        if (is_ok)
+        {
+            QStringList info = getMountInfo(device, MC_DEVICE);
+            if (info.size() > 2)
+            {
+                mount_point = info[1];
+                std::cout << "Mount point: " << mount_point.toStdString() << std::endl;
+                status = QLatin1String("Ok");
+            }
+            else
+            {
+                std::cout << "mount dir can't be match" << std::endl;
+                status = buffer;
+            }
+        }
+
+        return is_ok;
+    }
+
+    bool unmount(const QString &device, QString &status)
+    {
+        QProcess     unmount;
+        QString     &command = udisksExecutable;
+        QStringList  args    = unmountArgs(device);
+
+        unmount.setProcessChannelMode(QProcess::MergedChannels);
+
+        unmount.start(command, args);
+        if (!unmount.waitForStarted())
+        {
+            status = "Trouble with unmount: start issue";
+            return false;
+        }
+
+        if (!unmount.waitForFinished())
+        {
+            status = "Trouble with unmount: finish issue";
+            return false;
+        }
+
+        //int code       = unmount.exitCode();
+        bool is_ok     = false;
+        QString buffer = unmount.readAll();
+
+
+        // Stupid 'udisks' in any cases return 0 exit status!
+        if (buffer.contains(QRegExp("^Unmount failed:", Qt::CaseInsensitive)) == false)
+        {
+            is_ok = true;
+        }
+
+        if (is_ok == true)
+        {
+            status = "Ok";
+        }
+        else
+        {
+            status = buffer;
+        }
+
+        return is_ok;
+    }
+
+
+protected:
     enum Args
     {
         Mount,
@@ -101,41 +202,6 @@ struct Udisks
         MountOptions,
         BlockDevice
     };
-
-    Udisks()
-        : type(Unknown)
-    {
-        QString udisksctl = findExecutable("udisksctl");
-        if (udisksctl.isEmpty())
-        {
-            udisksctl = findExecutable("udisks");
-            if (!udisksctl.isEmpty())
-            {
-                type = Udisks1;
-                udisksExecutable            = udisksctl;
-                argsMapping[Mount]          = "--mount";
-                argsMapping[Unmount]        = "--unmount";
-                argsMapping[FilesystemType] = "--mount-fstype";
-                argsMapping[MountOptions]   = "--mount-options";
-            }
-        }
-        else
-        {
-            type = Udisks2;
-            udisksExecutable            = udisksctl;
-            argsMapping[Mount]          = "mount";
-            argsMapping[Unmount]        = "unmount";
-            argsMapping[FilesystemType] = "--filesystem-type";
-            argsMapping[MountOptions]   = "--options";
-            argsMapping[BlockDevice]    = "--block-device";
-        }
-    }
-
-
-    QString executable() const
-    {
-        return udisksExecutable;
-    }
 
     QStringList mountArgs(const QString &device, QString &/*mount_point*/, const QString &fs, const QString &options) const
     {
@@ -181,166 +247,106 @@ private:
     }
 
 
-private:
-    Type type;
-    QString udisksExecutable;
+protected:
+    QString             udisksExecutable;
     QMap<Args, QString> argsMapping;
 };
 
 
-namespace {
-const Udisks udisksctl;
-}
-
-
-static bool mountUdisks(const QString &device, QString &mount_point, QString &status, const QString &fs, const QString &options)
+class Udisks1Mounter : public UdisksBaseMounter
 {
-    QProcess    mount;
-    QString     command = udisksctl.executable();
-    QStringList args    = udisksctl.mountArgs(device, mount_point, fs, options);
-
-    mount.setProcessChannelMode(QProcess::MergedChannels);
-
-    mount.start(command, args);
-    if (!mount.waitForStarted())
+public:
+    Udisks1Mounter()
     {
-        status = "Trouble with mount: start issue";
-        return false;
+        udisksExecutable            = findExecutable("udisks");
+        argsMapping[Mount]          = "--mount";
+        argsMapping[Unmount]        = "--unmount";
+        argsMapping[FilesystemType] = "--mount-fstype";
+        argsMapping[MountOptions]   = "--mount-options";
     }
+};
 
-    if (!mount.waitForFinished())
-    {
-        status = "Trouble with mount: finish issue";
-        return false;
-    }
-
-    //int code       = mount.exitCode();
-    bool is_ok     = false;
-    QString buffer = mount.readAll();
-
-
-    // Stupid 'udisks' in any cases return 0 exit status!
-    if (buffer.contains(QRegExp("^Mount failed:", Qt::CaseInsensitive)) == false)
-    {
-        is_ok = true;
-    }
-
-    QRegExp reg("^Mounted (.+) at (.+)$", Qt::CaseSensitive);
-    if (is_ok && reg.exactMatch(buffer))
-    {
-        mount_point = reg.cap(2).trimmed();
-        std::cout << "Mount point: " << mount_point.toStdString() << std::endl;
-        status = "Ok";
-    }
-    else
-    {
-        std::cout << "mount dir can't be match" << std::endl;
-        status = buffer;
-    }
-
-    return is_ok;
-}
-
-static bool unmountUdisks(const QString &device, QString &status)
+class Udisks2Mounter : public UdisksBaseMounter
 {
-    QProcess    unmount;
-    QString     command = udisksctl.executable();
-    QStringList args    = udisksctl.unmountArgs(device);
-
-    unmount.setProcessChannelMode(QProcess::MergedChannels);
-
-    unmount.start(command, args);
-    if (!unmount.waitForStarted())
+public:
+    Udisks2Mounter()
     {
-        status = "Trouble with unmount: start issue";
-        return false;
+        udisksExecutable            = findExecutable("udisksctl");
+        argsMapping[Mount]          = "mount";
+        argsMapping[Unmount]        = "unmount";
+        argsMapping[FilesystemType] = "--filesystem-type";
+        argsMapping[MountOptions]   = "--options";
+        argsMapping[BlockDevice]    = "--block-device";
+    }
+};
+
+
+QSharedPointer<Mounter> getMounter()
+{
+    QSharedPointer<Mounter> mounter;
+
+    Settings settings;
+    QString  mountBackend = settings->value("core/mount_backend").toString();
+
+    // FIXME: make via factory or any other generic way
+    if (mountBackend == QLatin1String("classic"))
+    {
+        mounter = QSharedPointer<Mounter>(new ClassicMounter());
+    }
+    else if (mountBackend == QLatin1String("udisks1"))
+    {
+        mounter = QSharedPointer<Mounter>(new Udisks1Mounter());
+    }
+    else if (mountBackend == QLatin1String("udisks2"))
+    {
+        mounter = QSharedPointer<Mounter>(new Udisks2Mounter());
     }
 
-    if (!unmount.waitForFinished())
-    {
-        status = "Trouble with unmount: finish issue";
-        return false;
-    }
-
-    //int code       = unmount.exitCode();
-    bool is_ok     = false;
-    QString buffer = unmount.readAll();
-
-
-    // Stupid 'udisks' in any cases return 0 exit status!
-    if (buffer.contains(QRegExp("^Unmount failed:", Qt::CaseInsensitive)) == false)
-    {
-        is_ok = true;
-    }
-
-    if (is_ok == true)
-    {
-        status = "Ok";
-    }
-    else
-    {
-        status = buffer;
-    }
-
-    return is_ok;
+    return mounter;
 }
 
+} // anonymous namespace
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-bool diskMount(MountingType  type,
-               const QString      &device,
+bool diskMount(const QString      &device,
                QString            &mount_point,
                QString            &status,
                const QString      &fs,
                const QString      &options )
 {
     bool result = false;
-    switch (type)
-    {
-        case CLASSIC:
-        {
-            result = mountClassic(device, mount_point, status, fs, options);
-            break;
-        }
 
-        case UDISKS:
-        {
-            result = mountUdisks(device, mount_point, status, fs, options);
-            break;
-        }
+    QSharedPointer<Mounter> mounter = getMounter();
+    if (mounter)
+    {
+        result = mounter->mount(device, mount_point, status, fs, options);
     }
 
     return result;
 }
 
-bool diskUnMount(MountingType type, const QString &device, QString &status)
+bool diskUnMount(const QString &device, QString &status)
 {
     bool result = false;
-    switch (type)
-    {
-        case CLASSIC:
-        {
-            result = unmountClassic(device, status);
-            break;
-        }
 
-        case UDISKS:
-        {
-            result = unmountUdisks(device, status);
-        }
+    QSharedPointer<Mounter> mounter = getMounter();
+    if (mounter)
+    {
+        result = mounter->unmount(device, status);
     }
 
     return result;
 }
 
+namespace {
 QString &replaceOctalEscapes(QString &text)
 {
     QRegExp oct("\\\\0([0-9]{1,})");
     QMap<QString, int> replaceMap;
 
-    qDebug() << "Input string: " << text;
+    //qDebug() << "Input string: " << text;
 
     int pos = 0;
     while ((pos = oct.indexIn(text, pos)) != -1)
@@ -358,12 +364,14 @@ QString &replaceOctalEscapes(QString &text)
         text.replace(i.key(), QString("%1").arg(QChar(i.value())));
     }
 
-    qDebug() << "Output string: " << text;
+    //qDebug() << "Output string: " << text;
 
     return text;
 }
 
-QStringList isMounted(const QString &name, MountCheck check)
+} // anonymous namespace
+
+QStringList getMountInfo(const QString &name, MountInfoRequestType check)
 {
     QStringList return_value;
     QString     mtabFile = "/etc/mtab";
@@ -378,8 +386,6 @@ QStringList isMounted(const QString &name, MountCheck check)
 
     QByteArray data = file.readAll();
     QTextStream in(data);
-
-    //qDebug() << mtabFile << file.errorString() << in.atEnd() << file.size() << data;
 
     while(!in.atEnd())
     {
@@ -414,4 +420,10 @@ QStringList isMounted(const QString &name, MountCheck check)
     }
 
     return return_value;
+}
+
+
+void initMounters()
+{
+    // TODO: init mount factory, load mounting plugins
 }

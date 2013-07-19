@@ -25,10 +25,16 @@
 
 #include "mounttrayapp.h"
 #include "version.h"
+#include "settings.h"
 
 MountTrayApp::MountTrayApp(int & argc, char ** argv) :
     QApplication(argc, argv)
 {
+    setOrganizationName(QLatin1String("HatredsLogPlace"));
+    setOrganizationDomain(QLatin1String("htrd.su"));
+    setApplicationName(QLatin1String("MountTray"));
+    setApplicationVersion(QLatin1String(APP_VERSION_FULL));
+
     if (!QDBusConnection::systemBus().isConnected())
     {
         qDebug() << "Can't connect to dbus daemon. Some functions will be omited\n";
@@ -63,6 +69,13 @@ MountTrayApp::MountTrayApp(int & argc, char ** argv) :
                                   "DeviceChanged",
                                   this,
                                   SLOT(onDbusDeviceChangesMessage(QDBusObjectPath)));
+
+    // Setup configuration
+    Settings settings;
+    if (settings->contains("core/mount_backend") == false)
+    {
+        settings->setValue("core/mount_backend", "udisks2");
+    }
 
     // Scan already connected devices
     initialScanDevices();

@@ -32,7 +32,7 @@ StorageItem::StorageItem(DiskInfo info, QObject *parent) :
     _mount_options = "defaults";
     _is_mounted    = false;
 
-    QStringList mount = ::isMounted(info.device_name, MC_DEVICE);
+    QStringList mount = ::getMountInfo(info.device_name, MC_DEVICE);
 
     // Если примонтирован уже, то точку монтирования назначить на указанную
     if (mount.count() > 0)
@@ -58,13 +58,13 @@ bool StorageItem::isMounted()
 
 bool StorageItem::mount(QString &text_status)
 {
-    bool status = ::diskMount(UDISKS, _udev_info.device_name, _mount_point, text_status);
+    bool status = ::diskMount(_udev_info.device_name, _mount_point, text_status);
     if (status)
     {
         _is_mounted = true;
         if (_mount_point.isEmpty())
         {
-            QStringList mounts = ::isMounted(_udev_info.device_name, MC_DEVICE);
+            QStringList mounts = ::getMountInfo(_udev_info.device_name, MC_DEVICE);
             if (mounts.count() > 0)
             {
                 _mount_point = mounts.at(1);
@@ -82,7 +82,7 @@ bool StorageItem::mount(QString &text_status)
 
 bool StorageItem::unmount(QString &text_status)
 {
-    bool status = ::diskUnMount(UDISKS, _udev_info.device_name, text_status);
+    bool status = ::diskUnMount(_udev_info.device_name, text_status);
     if (status)
     {
         _is_mounted  = false;
@@ -105,7 +105,7 @@ void StorageItem::setMountStatus(bool is_mounted, const QString &mount_point)
     {
         if (mount_point.isEmpty())
         {
-            QStringList mounts = ::isMounted(_udev_info.device_name, MC_DEVICE);
+            QStringList mounts = ::getMountInfo(_udev_info.device_name, MC_DEVICE);
             if (mounts.count() > 0)
             {
                 _mount_point = mounts.at(1);

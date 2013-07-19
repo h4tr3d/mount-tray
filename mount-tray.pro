@@ -21,7 +21,8 @@ SOURCES += \
     src/storageitem.cpp \
     src/mount.cpp \
     src/diskmonitor.cpp \
-    src/menudiskitem.cpp
+    src/menudiskitem.cpp \
+    src/settings.cpp
 
 HEADERS  += \
     src/mounttrayapp.h \
@@ -30,7 +31,8 @@ HEADERS  += \
     src/mount.h \
     src/diskmonitor.h \
     src/menudiskitem.h \
-    src/version.h
+    src/version.h \
+    src/settings.h
 
 RESOURCES += \
     main.qrc
